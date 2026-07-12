@@ -1,0 +1,37 @@
+name: Post Validation Comment
+
+on:
+  workflow_run:
+    workflows: ["Validate canvas.json"]
+    types:
+      - completed
+
+jobs:
+  post-comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download validation artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: validation-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read PR number
+        id: pr
+        run: |
+          if [ -f pr_number.txt ]; then
+            echo "num=$(cat pr_number.txt)" >> $GITHUB_OUTPUT
+          else
+            echo "Error: pr_number.txt not found!"
+            exit 1
+          fi
+
+      - name: Post PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ steps.pr.outputs.num }}
+          path: validation_report.md

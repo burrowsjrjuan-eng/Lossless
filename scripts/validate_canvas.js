@@ -64,6 +64,16 @@ function validate() {
     try {
       const urlObj = new URL(url);
       const pathname = urlObj.pathname;
+
+      // Host check
+      const allowedHosts = [
+        'vivimusicanvas.mkmdevilmi.workers.dev',
+        'vivimusicanvas-mtih.vercel.app'
+      ];
+      if (!allowedHosts.includes(urlObj.hostname)) {
+        errors.push({ index, song, artist, error: `URL domain '${urlObj.hostname}' is not allowed (must be 'vivimusicanvas.mkmdevilmi.workers.dev' or 'vivimusicanvas-mtih.vercel.app')` });
+      }
+
       const match = pathname.match(/\/(Song|Album)\/(.+)$/i);
       
       if (match) {
